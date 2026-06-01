@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobGenie AI - Smart Job Recommendation System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar" id="top">
+        <a class="brand" href="#top" aria-label="JobGenie AI home">
+            <span class="brand-mark">JG</span>
+            <span>JobGenie AI</span>
+        </a>
+        <button class="nav-toggle" type="button" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#upload">Upload</a>
+            <a href="#results">Results</a>
+            <a href="#analytics">Analytics</a>
+            <button class="btn btn-small btn-secondary auth-guest" id="signInBtn" type="button">Sign In</button>
+            <button class="btn btn-small btn-primary auth-guest" id="signUpBtn" type="button">Sign Up</button>
+            <div class="auth-profile" id="authProfile" hidden>
+                <span class="profile-avatar" id="profileAvatar">JG</span>
+                <span class="profile-name" id="profileName">Account</span>
+                <button class="btn btn-small btn-secondary" id="logoutButton" type="button">Logout</button>
+            </div>
+            <button class="btn btn-small btn-primary" data-scroll-target="#upload">Get Started</button>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero section-shell">
+            <div class="hero-copy">
+                <p class="eyebrow">AI-powered resume intelligence</p>
+                <h1>JobGenie AI</h1>
+                <p class="hero-lede">Upload your resume, get smart job recommendations, uncover skill gaps, and apply to the right opportunities — all in one place.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary" data-scroll-target="#upload">Analyze Resume</button>
+                    <button class="btn btn-secondary" data-scroll-target="#features">Explore Features</button>
+                </div>
+                <div class="search-panel" role="search">
+                    <input id="heroSearch" type="search" placeholder="Search roles like data scientist, frontend, cybersecurity" aria-label="Search roles">
+                    <button class="btn btn-search" type="button" id="heroSearchButton">Search</button>
+                    <div class="suggestions-dropdown" id="searchSuggestions" hidden></div>
+                </div>
+            </div>
+            <div class="hero-visual" aria-label="Job recommendation preview">
+                <div class="floating-card card-score">
+                    <span>Top Match</span>
+                    <strong>ML Engineer</strong>
+                    <div class="mini-meter"><span style="width: 92%"></span></div>
+                </div>
+                <div class="floating-card card-skills">
+                    <span>Skill Signal</span>
+                    <div class="skill-dots">
+                        <i></i><i></i><i></i><i></i><i></i>
+                    </div>
+                    <strong>Python + SQL + NLP</strong>
+                </div>
+                <div class="orbital-panel">
+                    <div class="radar-ring ring-one"></div>
+                    <div class="radar-ring ring-two"></div>
+                    <div class="radar-core">AI</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="search-results section-shell reveal-on-scroll" id="searchResults" hidden>
+            <div class="search-results-head">
+                <div>
+                    <p class="eyebrow">Live dataset search</p>
+                    <h2 id="searchTitle">Matching roles</h2>
+                </div>
+                <button class="icon-button" id="clearSearchResults" type="button" aria-label="Clear search results">&times;</button>
+            </div>
+            <div class="search-result-grid" id="searchResultGrid"></div>
+        </section>
+
+        <section class="feature-band" id="features">
+            <div class="section-heading">
+                <p class="eyebrow">End-to-end workflow</p>
+                <h2>Resume parsing, ML matching, analytics, and guidance in one flow.</h2>
+            </div>
+            <div class="feature-grid">
+                <article class="glass-card">
+                    <span class="feature-icon">01</span>
+                    <h3>PDF Resume Extraction</h3>
+                    <p>PyMuPDF reads your uploaded resume and sends clean text into the recommendation pipeline.</p>
+                </article>
+                <article class="glass-card">
+                    <span class="feature-icon">02</span>
+                    <h3>TF-IDF Job Matching</h3>
+                    <p>Resume text and cleaned LinkedIn-style job data are compared with cosine similarity.</p>
+                </article>
+                <article class="glass-card">
+                    <span class="feature-icon">03</span>
+                    <h3>Skill Gap Analysis</h3>
+                    <p>Matched and missing skills are compared against each recommended job profile.</p>
+                </article>
+                <article class="glass-card">
+                    <span class="feature-icon">04</span>
+                    <h3>Career Chatbot</h3>
+                    <p>Ask for resume, interview, roadmap, and skill guidance based on your latest analysis.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="upload-section section-shell" id="upload">
+            <div class="section-heading align-left">
+                <p class="eyebrow">Upload resume</p>
+                <h2>Drop in a text-based PDF and let JobGenie do the matching.</h2>
+            </div>
+            <div class="upload-layout">
+                <div class="upload-card glass-card">
+                    <form id="resumeForm" enctype="multipart/form-data">
+                        <label class="drop-zone" id="dropZone" for="resumeInput">
+                            <input type="file" id="resumeInput" name="resume" accept="application/pdf">
+                            <span class="drop-icon">PDF</span>
+                            <strong>Drag & drop your resume</strong>
+                            <small>or click to choose a PDF file</small>
+                        </label>
+                        <div class="file-preview" id="filePreview" hidden>
+                            <div>
+                                <span class="file-name" id="fileName"></span>
+                                <small id="fileMeta"></small>
+                            </div>
+                            <button type="button" class="icon-button" id="clearFile" aria-label="Remove selected file">&times;</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-wide" id="analyzeButton">
+                            <span class="button-text">Analyze Resume</span>
+                            <span class="spinner" aria-hidden="true"></span>
+                        </button>
+                        <p class="status-message" id="uploadStatus" role="status"></p>
+                        <div class="processing-panel" id="processingPanel" hidden>
+                            <div class="processing-head">
+                                <span id="processingText">Uploading Resume...</span>
+                                <strong id="processingPercent">0%</strong>
+                            </div>
+                            <div class="processing-bar" aria-hidden="true">
+                                <span id="processingFill"></span>
+                            </div>
+                            <ol class="processing-steps" id="processingSteps">
+                                <li data-step="0">Uploading Resume</li>
+                                <li data-step="1">Extracting Text</li>
+                                <li data-step="2">Analyzing Skills</li>
+                                <li data-step="3">Matching Jobs</li>
+                                <li data-step="4">Generating Insights</li>
+                            </ol>
+                        </div>
+                    </form>
+                </div>
+                <aside class="upload-aside dashboard-metrics" aria-label="JobGenie system metrics">
+                    <div class="metric glass-card premium-metric">
+                        <div class="metric-top">
+                            <span class="metric-icon">DB</span>
+                            <span class="metric-status"><i></i>System Online</span>
+                        </div>
+                        <strong id="datasetCount" data-count-target="148">0</strong>
+                        <span>cleaned job rows</span>
+                        <div class="metric-progress"><span style="--metric-fill: 92%"></span></div>
+                    </div>
+                    <div class="metric glass-card premium-metric">
+                        <div class="metric-top">
+                            <span class="metric-icon">TOP</span>
+                            <span class="metric-status"><i></i>Live Processing</span>
+                        </div>
+                        <strong data-count-target="5">0</strong>
+                        <span>ranked recommendations</span>
+                        <div class="tiny-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                    </div>
+                    <div class="metric glass-card premium-metric">
+                        <div class="metric-top">
+                            <span class="metric-icon">AI</span>
+                            <span class="metric-status"><i></i>AI Active</span>
+                        </div>
+                        <strong data-count-target="1.2" data-count-decimals="1" data-count-suffix="s">0s</strong>
+                        <span>average response speed</span>
+                        <div class="metric-progress"><span style="--metric-fill: 76%"></span></div>
+                    </div>
+                    <div class="metric glass-card premium-metric">
+                        <div class="metric-top">
+                            <span class="metric-icon">CV</span>
+                            <span class="metric-status"><i></i>Parser Ready</span>
+                        </div>
+                        <strong data-count-target="96" data-count-suffix="%">0%</strong>
+                        <span>resume parsing signal</span>
+                        <div class="tiny-ring" aria-hidden="true"></div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="results-section" id="results">
+            <div class="section-heading">
+                <p class="eyebrow">Dynamic results</p>
+                <h2>Your recommendations appear here after analysis.</h2>
+            </div>
+            <div class="empty-state glass-card" id="emptyState">
+                <h3>No resume analyzed yet</h3>
+                <p>Upload a PDF resume to unlock job matches, skill gaps, and charts.</p>
+            </div>
+            <div class="summary-grid" id="summaryGrid" hidden></div>
+            <div class="results-toolbar glass-card" id="resultsToolbar" hidden>
+                <div>
+                    <strong>Career report ready</strong>
+                    <span>Save your analysis or generate a printable report.</span>
+                </div>
+                <div class="toolbar-actions">
+                    <button class="btn btn-secondary" type="button" id="saveResultsButton">Save Results</button>
+                    <button class="btn btn-primary" type="button" id="downloadReportButton">Download Report</button>
+                </div>
+            </div>
+            <div class="recommendation-grid" id="recommendationGrid" hidden></div>
+        </section>
+
+        <section class="analytics-section section-shell" id="analytics">
+            <div class="section-heading align-left">
+                <p class="eyebrow">Analytics</p>
+                <h2>Visualize match scores and skill coverage.</h2>
+            </div>
+            <div class="analytics-empty glass-card" id="analyticsEmpty">
+                <span class="analytics-empty-icon">AI</span>
+                <h3>Analytics locked until analysis</h3>
+                <p>Upload and analyze your resume to unlock analytics and insights.</p>
+            </div>
+            <div class="analytics-content" id="analyticsContent" hidden>
+                <div class="analytics-stat-grid" id="analyticsStats" hidden></div>
+                <div class="charts-grid" id="chartsGrid">
+                    <div class="chart-card glass-card">
+                        <h3>Top 5 Job Scores</h3>
+                        <div class="chart-canvas">
+                            <canvas id="jobChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card glass-card">
+                        <h3>Skill Coverage</h3>
+                        <div class="chart-canvas chart-canvas-compact">
+                            <canvas id="skillChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <a class="brand footer-brand" href="#top" aria-label="JobGenie AI home">
+                <span class="brand-mark">JG</span>
+                <span>JobGenie AI</span>
+            </a>
+            <p class="footer-about">AI-powered resume parsing, job matching, and career insights for faster, sharper job searches.</p>
+            <nav class="footer-links" aria-label="Footer navigation">
+                <a href="#top">Home</a>
+                <a href="#upload">Upload</a>
+                <a href="#results">Results</a>
+                <a href="#analytics">Analytics</a>
+            </nav>
+            <div class="footer-social" aria-label="Social links">
+                <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn">in</a>
+                <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub">GH</a>
+                <a href="https://x.com" target="_blank" rel="noreferrer" aria-label="X">X</a>
+            </div>
+        </div>
+        <p class="footer-copy">&copy; 2026 JobGenie AI. Smart job recommendations powered by resume intelligence.</p>
+    </footer>
+
+    <button class="chatbot-launcher" id="chatbotLauncher" type="button" aria-label="Open JobGenie chatbot">
+        <span>AI</span>
+    </button>
+
+    <section class="chatbot-panel" id="chatbotPanel" aria-live="polite" hidden>
+        <header>
+            <div>
+                <strong>JobGenie Coach</strong>
+                <small>Career guidance chatbot</small>
+            </div>
+            <button type="button" class="icon-button" id="closeChatbot" aria-label="Close chatbot">&times;</button>
+        </header>
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="message-row bot">
+                <span class="message-avatar">AI</span>
+                <div class="message bot">Hi, I am JobGenie. Upload your resume or ask me about job matches, skills, interviews, or resume improvements.</div>
+            </div>
+        </div>
+        <div class="chat-feature-panel" id="chatFeaturePanel">
+            <button type="button" data-prompt="Resume Review">Resume Review</button>
+            <button type="button" data-prompt="Career Path">Career Path</button>
+            <button type="button" data-prompt="Skill Gap">Skill Gap</button>
+            <button type="button" data-prompt="Interview Questions">Interview Questions</button>
+            <button type="button" data-prompt="Learning Roadmap">Learning Roadmap</button>
+        </div>
+        <div class="chat-suggestions" id="chatSuggestions">
+            <button type="button" class="chat-suggestion">Best jobs for me</button>
+            <button type="button" class="chat-suggestion">Improve my resume</button>
+            <button type="button" class="chat-suggestion">What skills should I learn?</button>
+            <button type="button" class="chat-suggestion">Interview tips</button>
+            <button type="button" class="chat-suggestion">Roadmap for Data Science</button>
+            <button type="button" class="chat-suggestion">Best AI/ML projects</button>
+            <button type="button" class="chat-suggestion">Resume mistakes</button>
+            <button type="button" class="chat-suggestion">Salary guidance</button>
+            <button type="button" class="chat-suggestion">Career switch advice</button>
+            <button type="button" class="chat-suggestion">Freelancing tips</button>
+        </div>
+        <form class="chatbot-form" id="chatbotForm">
+            <input type="text" id="chatInput" placeholder="Ask for skill gaps or interview tips" autocomplete="off">
+            <button class="btn btn-primary btn-chat" type="submit">Send</button>
+        </form>
+    </section>
+
+    <div class="modal-backdrop" id="jobModal" hidden>
+        <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <button type="button" class="icon-button modal-close" id="closeJobModal" aria-label="Close job details">&times;</button>
+            <div class="modal-kicker">Job details</div>
+            <h2 id="modalTitle">Recommended role</h2>
+            <div class="modal-meta" id="modalMeta"></div>
+            <p class="modal-description" id="modalDescription"></p>
+            <div class="skills-block">
+                <strong>Required skills</strong>
+                <div class="chip-row" id="modalSkills"></div>
+            </div>
+            <div class="modal-actions">
+                <a class="btn btn-primary" id="modalApplyLink" target="_blank" rel="noreferrer">Apply</a>
+                <button type="button" class="btn btn-secondary" id="modalSaveJob">Save Job</button>
+            </div>
+        </article>
+    </div>
+
+    <div class="modal-backdrop" id="signInModal" hidden>
+        <article class="modal-card auth-card" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
+            <button type="button" class="icon-button modal-close" data-close-auth aria-label="Close sign in">&times;</button>
+            <div class="modal-kicker">Welcome back</div>
+            <h2 id="signInTitle">Sign in to JobGenie</h2>
+            <p class="auth-subtitle">Continue your saved analyses, jobs, and chat guidance.</p>
+            <form class="auth-form floating-form" id="signInForm" novalidate>
+                <label class="floating-field">
+                    <input type="email" id="signinEmail" autocomplete="email" required placeholder=" ">
+                    <span>Email</span>
+                </label>
+                <label class="floating-field password-field">
+                    <input type="password" id="signinPassword" autocomplete="current-password" required placeholder=" ">
+                    <span>Password</span>
+                    <button type="button" class="password-toggle" data-toggle-password="#signinPassword">Show</button>
+                </label>
+                <div class="auth-options">
+                    <label class="remember-row">
+                        <input type="checkbox" id="rememberMe">
+                        <span>Remember me</span>
+                    </label>
+                    <button type="button" class="link-button" id="forgotPasswordButton">Forgot password?</button>
+                </div>
+                <p class="auth-status" id="signInStatus" role="status"></p>
+                <button class="btn btn-primary btn-wide" type="submit">Sign In</button>
+                <p class="auth-switch">New here? <button type="button" class="link-button" id="openSignUpFromSignIn">Create account</button></p>
+            </form>
+        </article>
+    </div>
+
+    <div class="modal-backdrop" id="signUpModal" hidden>
+        <article class="modal-card auth-card" role="dialog" aria-modal="true" aria-labelledby="signUpTitle">
+            <button type="button" class="icon-button modal-close" data-close-auth aria-label="Close sign up">&times;</button>
+            <div class="modal-kicker">Start free</div>
+            <h2 id="signUpTitle">Create your JobGenie account</h2>
+            <p class="auth-subtitle">Save your recommendations, reports, and personalized career history.</p>
+            <form class="auth-form floating-form" id="signUpForm" novalidate>
+                <label class="floating-field">
+                    <input type="text" id="signupFullName" autocomplete="name" required placeholder=" ">
+                    <span>Full Name</span>
+                </label>
+                <label class="floating-field">
+                    <input type="email" id="signupEmail" autocomplete="email" required placeholder=" ">
+                    <span>Email</span>
+                </label>
+                <label class="floating-field password-field">
+                    <input type="password" id="signupPassword" autocomplete="new-password" required placeholder=" ">
+                    <span>Password</span>
+                    <button type="button" class="password-toggle" data-toggle-password="#signupPassword">Show</button>
+                </label>
+                <label class="floating-field password-field">
+                    <input type="password" id="signupConfirmPassword" autocomplete="new-password" required placeholder=" ">
+                    <span>Confirm Password</span>
+                    <button type="button" class="password-toggle" data-toggle-password="#signupConfirmPassword">Show</button>
+                </label>
+                <p class="auth-status" id="signUpStatus" role="status"></p>
+                <button class="btn btn-primary btn-wide" type="submit">Create Account</button>
+                <p class="auth-switch">Already have an account? <button type="button" class="link-button" id="openSignInFromSignUp">Sign in</button></p>
+            </form>
+        </article>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
