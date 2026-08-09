@@ -161,7 +161,7 @@ def extract_skills(text):
 
     return sorted(skills)
 
-
+# Extract skills from text by cleaning input and matching keywords from SKILL_KEYWORDS dictionary
 def parse_skill_column(skills_text):
     parts = re.split(r"[;,|]", str(skills_text or ""))
     extracted = set()

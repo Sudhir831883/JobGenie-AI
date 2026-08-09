@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.db
+*.sqlite3
+jobgenie.db-journal*
+jobgenie.db.corrupt*
+.env
