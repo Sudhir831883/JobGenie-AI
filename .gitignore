@@ -1,7 +1,10 @@
+.venv/
+venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.env
 *.db
 *.sqlite3
-jobgenie.db-journal*
-jobgenie.db.corrupt*
-.env
+.DS_Store
